@@ -94,6 +94,18 @@ def register_mcp_server(
     If the parent ``MCPServer`` does not exist, it is created automatically.
     If the version already exists, a ``MlflowException`` is raised.
 
+    .. note:: Permission semantics: this function issues a single upsert-style
+        write and does not expose a separate "create the parent server" step
+        to the caller, unlike :py:func:`mlflow.register_model` (whose
+        ``create_registered_model`` and ``create_model_version`` calls are two
+        independent REST requests). Because of that, an auth plugin enforcing
+        MLflow's pseudo-CRUD verbs on the ``mcpservers`` resource type may
+        choose to gate this entire call on ``update`` — treating any parent
+        auto-creation as an implementation detail rather than a
+        separately-protectable action — instead of requiring ``create`` when
+        the parent does not yet exist. Which verb(s) are actually required
+        depends on the auth plugin in use; consult its documentation.
+
     When ``tools`` is omitted, MLflow attempts best-effort auto-discovery by
     querying the first usable remote URL in ``server_json.remotes[]`` (requires
     ``mlflow[mcp]``), unless ``MLFLOW_ENABLE_MCP_TOOL_DISCOVERY`` is ``false``

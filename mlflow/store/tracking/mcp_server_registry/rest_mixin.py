@@ -150,6 +150,11 @@ class RestMCPServerRegistryMixin:
             body["tools"] = None if tools is None else [t.to_dict() for t in tools]
         if connect_options is not None:
             body["connect_options"] = {k: asdict(v) for k, v in connect_options.items()}
+        # This single POST both creates the parent MCPServer (if `name` is new) and
+        # adds a version — there is no separate REST call a client makes for the
+        # "new server" case. Auth plugins that require `create` for the low-level
+        # create_mcp_server() call may still gate this whole endpoint on `update`
+        # only; see the permission-semantics note on mlflow.genai.register_mcp_server.
         data = self._mcp_request("POST", f"{_server_path(name)}/versions", json=body)
         return MCPServerVersion.from_dict(data)
 
